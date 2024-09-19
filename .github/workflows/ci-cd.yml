@@ -31,11 +31,11 @@ jobs:
       run: npm list --depth=0
 
     - name: Deploy to GitHub Pages
-      if: success() && github.ref == 'refs/heads/main'
+      if: success() && github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .
+        publish_dir: .  # Adjust this if your build output is in a specific directory
 
 env:
   MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }}  # Example for using secrets
