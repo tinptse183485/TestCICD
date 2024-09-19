@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: '14'  
 
@@ -24,11 +24,6 @@ jobs:
     - name: Run tests
       run: npm test
 
-    - name: Check Node.js version
-      run: node -v
-
-    - name: List installed packages
-      run: npm list --depth=0
 
     - name: Deploy to GitHub Pages
       if: success() && github.ref == 'refs/heads/master'
