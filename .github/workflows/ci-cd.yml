@@ -34,4 +34,4 @@ jobs:
         publish_branch: gh-pages  # Specify the branch to deploy to
 
 env:
-  MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }}  # Example for using secretss
+  MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }}  # Example for using secrets
