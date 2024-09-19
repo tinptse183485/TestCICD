@@ -3,13 +3,16 @@
     "version": "1.0.0",
     "description": "BMI Calculator with User Accounts",
     "scripts": {
-      "test": "jest"
+        "test": "jest"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
-      "jest": "^27.0.6",
-      "jest-environment-jsdom": "^27.0.6",
-      "jsdom": "^16.6.0"
+        "jest": "^27.5.1",
+        "jest-environment-jsdom": "^27.0.6",
+        "jsdom": "^16.6.0"
+    },
+    "jest": {
+        "testEnvironment": "node"
     }
-  }
+}
