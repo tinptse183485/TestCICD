@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator with History</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: url('https://source.unsplash.com/1600x900/?fitness,health');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: -1;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        h2 {
+            color: #4a4a4a;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            position: relative;
+        }
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        input {
+            background-color: #f0f0f0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input:focus {
+            background-color: #ffffff;
+            outline: none;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+            transform: scale(1.03);
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 15px;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        #result {
+            margin-top: 30px;
+            font-weight: bold;
+            text-align: center;
+            color: #4a4a4a;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255,255,255,0.8);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        #result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #chartContainer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .nav-buttons button {
+            width: auto;
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        .form-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .form-container.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .decoration {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+        .decoration-1 {
+            top: -50px;
+            left: -50px;
+        }
+        .decoration-2 {
+            bottom: -50px;
+            right: -50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        <h2>BMI Calculator with User Accounts</h2>
+        <div class="nav-buttons">
+            <button onclick="showForm('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <button onclick="showForm('register')"><i class="fas fa-user-plus"></i> Register</button>
+            <button onclick="showForm('bmi')"><i class="fas fa-calculator"></i> BMI</button>
+            <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <div id="loginForm" class="form-container">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="loginUsername" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="loginPassword" placeholder="Password">
+            </div>
+            <button onclick="login()">Login</button>
+        </div>
+
+        <div id="registerForm" class="form-container">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="registerUsername" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="registerPassword" placeholder="Password">
+            </div>
+            <button onclick="register()">Register</button>
+        </div>
+
+        <div id="bmiForm" class="form-container">
+            <div class="input-group">
+                <i class="fas fa-ruler-vertical"></i>
+                <input type="number" id="height" placeholder="Height (cm)" step="0.01">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-weight"></i>
+                <input type="number" id="weight" placeholder="Weight (kg)" step="0.1">
+            </div>
+            <button onclick="calculateBMI(event)">Calculate BMI</button>
+            <div id="result"></div>
+            <div id="chartContainer">
+                <canvas id="bmiChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bmiHistory = [];
+        let chart;
+        let currentUser = localStorage.getItem('currentUser') || null;
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+
+        function showForm(formName) {
+            document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+            document.getElementById(`${formName}Form`).classList.add('active');
+        }
+
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            console.log('Registration attempt:', username);
+            if (username && password) {
+                if (users[username]) {
+                    alert('Username already exists. Please choose a different one.');
+                    console.log('Registration failed: Username already exists');
+                } else {
+                    users[username] = { password, bmiHistory: [] };
+                    saveUserData();
+                    console.log('Users data after registration:', JSON.parse(localStorage.getItem('users')));
+                    alert('Registration successful. You can now log in.');
+                    showForm('login');
+                    console.log('Registration successful');
+                }
+            } else {
+                alert('Please enter both username and password.');
+                console.log('Registration failed: Missing username or password');
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            console.log('Login attempt:', username);
+            if (username && password) {
+                // Reload users data from localStorage
+                users = JSON.parse(localStorage.getItem('users')) || {};
+                console.log('Users data:', users);
+                if (users[username] && users[username].password === password) {
+                    currentUser = username;
+                    localStorage.setItem('currentUser', currentUser);
+                    bmiHistory = users[username].bmiHistory || [];
+                    updateChart();
+                    document.querySelector('h2').textContent = `Welcome, ${username}!`;
+                    showForm('bmi');
+                    console.log('Login successful');
+                } else {
+                    alert('Invalid username or password.');
+                    console.log('Login failed: Invalid credentials');
+                }
+            } else {
+                alert('Please enter both username and password.');
+                console.log('Login failed: Missing username or password');
+            }
+        }
+
+        function calculateBMI(event) {
+            if (!currentUser) {
+                alert('Please log in to use the BMI calculator.');
+                showForm('login');
+                return;
+            }
+
+            // Create ripple effect
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+
+            // Calculate BMI
+            const height = document.getElementById('height').value / 100; // Convert cm to m
+            const weight = document.getElementById('weight').value;
+            const result = document.getElementById('result');
+            
+            if (height && weight) {
+                const bmi = weight / (height * height);
+                const bmiValue = parseFloat(bmi.toFixed(2));
+                result.innerHTML = `Your BMI is: ${bmiValue}`;
+                
+                let category;
+                if (bmi < 18.5) {
+                    category = "Underweight";
+                } else if (bmi >= 18.5 && bmi < 25) {
+                    category = "Normal weight";
+                } else if (bmi >= 25 && bmi < 30) {
+                    category = "Overweight";
+                } else {
+                    category = "Obese";
+                }
+                result.innerHTML += `<br>(${category})`;
+                
+                // Add advice
+                const advice = getAdvice(bmiValue, category);
+                result.innerHTML += `<br><br>${advice}`;
+                
+                result.classList.add('show');
+
+                // Add to history
+                const bmiEntry = {
+                    date: new Date().toISOString(), // Store date as ISO string
+                    bmi: bmiValue
+                };
+                bmiHistory.push(bmiEntry);
+                users[currentUser].bmiHistory = bmiHistory;
+                saveUserData();
+                updateChart();
+            } else {
+                alert("Please enter both height and weight.");
+            }
+        }
+
+        function getAdvice(bmi, category) {
+            let advice = "";
+            switch (category) {
+                case "Underweight":
+                    advice = "You may need to gain some weight. Consider consulting a nutritionist for a balanced diet plan to help you reach a healthier weight.";
+                    break;
+                case "Normal weight":
+                    advice = "Great job! You're at a healthy weight. Maintain your current lifestyle with a balanced diet and regular exercise.";
+                    break;
+                case "Overweight":
+                    advice = "Consider making some lifestyle changes. Focus on a balanced diet and increase your physical activity to reach a healthier weight.";
+                    break;
+                case "Obese":
+                    advice = "It's important to take steps to improve your health. Consult with a healthcare professional to develop a safe and effective weight loss plan.";
+                    break;
+            }
+            return advice;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('bmiChart').getContext('2d');
+            const labels = bmiHistory.map(entry => {
+                // Check if entry.date is a string, and if so, create a new Date object
+                const date = typeof entry.date === 'string' ? new Date(entry.date) : entry.date;
+                return date.toLocaleDateString();
+            });
+            const data = bmiHistory.map(entry => entry.bmi);
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'BMI History',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add a logout function
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            bmiHistory = [];
+            updateChart();
+            showForm('login');
+            document.querySelector('h2').textContent = 'BMI Calculator with User Accounts';
+        }
+
+        // Add this function to check if user is logged in on page load
+        function checkLoggedInUser() {
+            // Reload users data from localStorage
+            users = JSON.parse(localStorage.getItem('users')) || {};
+            if (currentUser && users[currentUser]) {
+                bmiHistory = users[currentUser].bmiHistory || [];
+                updateChart();
+                showForm('bmi');
+                document.querySelector('h2').textContent = `Welcome back, ${currentUser}!`;
+            } else {
+                showForm('login');
+            }
+        }
+
+        // Add this function to save user data
+        function saveUserData() {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Call this function when the page loads
+        window.onload = checkLoggedInUser;
+
+        // Initialize with login form
+        showForm('login');
+    </script>
+</body>
+</html>

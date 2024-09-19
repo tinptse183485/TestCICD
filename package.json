@@ -1,0 +1,15 @@
+{
+    "name": "bmi-calculator",
+    "version": "1.0.0",
+    "description": "BMI Calculator with User Accounts",
+    "scripts": {
+      "test": "jest"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "jest": "^27.0.6",
+      "jest-environment-jsdom": "^27.0.6",
+      "jsdom": "^16.6.0"
+    }
+  }
