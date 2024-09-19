@@ -13,6 +13,6 @@
         "jsdom": "^16.6.0"
     },
     "jest": {
-        "testEnvironment": "node"
+        "testEnvironment": "jsdom"  
     }
 }
