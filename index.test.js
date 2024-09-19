@@ -41,6 +41,6 @@ describe('index.html', () => {
 
   test('contains calculate button', () => {
     const calculateButton = container.querySelector('#bmiForm button');
-    expect(calculateButton.textContent).toContain('CalculateBMI');
+    expect(calculateButton.textContent).toContain('Calculate BMI');
   });
 });
